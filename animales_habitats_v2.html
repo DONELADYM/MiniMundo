@@ -2,1003 +2,262 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Animales y Hábitats — MiniMundo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animales y Hábitats</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(160deg, #fce4ec 0%, #e3f2fd 50%, #f1f8e9 100%);
-  min-height: 100vh;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 10px 8px 28px;
-}
-
-/* ── TOP BAR ── */
-#top-bar {
-  width: 100%; max-width: 560px;
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 6px;
-}
-#lang-toggle {
-  display: flex; border-radius: 20px; overflow: hidden;
-  border: 2px solid #a78bfa; background: white;
-}
-#lang-toggle button {
-  padding: 5px 12px; font-size: 13px; font-weight: 800;
-  border: none; background: transparent; color: #9d7dc8;
-  cursor: pointer; transition: background 0.15s, color 0.15s;
-}
-#lang-toggle button.active {
-  background: #a78bfa; color: white;
-}
-
-#home-btn {
-  padding: 8px 18px;
-  font-size: 15px; font-weight: 800;
-  border-radius: 24px;
-  border: 2.5px solid #a78bfa;
-  background: white; color: #7c3aed;
-  cursor: pointer; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 5px;
-  box-shadow: 0 3px 10px rgba(130,90,200,0.18);
-  transition: background 0.15s, color 0.15s, transform 0.15s;
-  white-space: nowrap;
-}
-#home-btn:hover { background: #a78bfa; color: white; transform: scale(1.05); }
-
-#streak-display {
-  font-size: 15px; font-weight: 800; color: #5d3b8c;
-  transition: transform 0.2s;
-  min-width: 60px; text-align: right;
-}
-#streak-display.bump { animation: streakBump 0.3s ease; }
-@keyframes streakBump { 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
-
-h1 {
-  font-size: clamp(20px, 5vw, 28px);
-  font-weight: 800; color: #5d3b8c;
-  text-align: center; margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
-
-/* ── PROGRESS ── */
-#progress-bar {
-  width: 100%; max-width: 560px;
-  height: 14px; background: #e0d7f5;
-  border-radius: 20px; overflow: hidden; margin-bottom: 8px;
-}
-#progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #a78bfa, #34d399);
-  border-radius: 20px; transition: width 0.5s ease;
-}
-#round-info {
-  font-size: 15px; color: #7c5c9e; font-weight: 600;
-  text-align: center; margin-bottom: 4px;
-}
-
-/* ── TIMER ── */
-#timer-bar {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 8px; font-size: 13px; color: #9c7abe;
-}
-#timer-display {
-  font-size: 15px; font-weight: 800; color: #7c3aed;
-  min-width: 40px;
-}
-#timer-toggle {
-  padding: 3px 10px; font-size: 12px; font-weight: 700;
-  border-radius: 20px; border: 2px solid #c4b5d8;
-  background: white; color: #7c5c9e; cursor: pointer;
-}
-
-/* ── INSTRUCTION ── */
-#instruction {
-  font-size: clamp(15px, 4vw, 19px);
-  font-weight: 700; color: #3a2a60;
-  text-align: center; margin-bottom: 12px;
-  line-height: 1.3;
-}
-
-#game { width: 100%; max-width: 560px; }
-
-/* ── ANIMAL CARDS ── */
-#animals-area {
-  display: flex; flex-wrap: wrap;
-  justify-content: center; gap: 12px;
-  margin-bottom: 16px; min-height: 110px;
-}
-
-@keyframes cardEntry {
-  0%   { transform: translateY(-60px) scale(0.7); opacity: 0; }
-  65%  { transform: translateY(8px) scale(1.06); opacity: 1; }
-  82%  { transform: translateY(-4px) scale(0.97); }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-.animal-card {
-  width: clamp(80px, 24vw, 102px);
-  height: clamp(80px, 24vw, 102px);
-  border-radius: 20px;
-  background: white;
-  border: 3px solid #d4b8f0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: grab; font-size: clamp(34px, 9vw, 44px);
-  user-select: none;
-  box-shadow: 0 4px 12px rgba(130,90,200,0.12);
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.2s;
-  touch-action: none;
-  opacity: 0;
-}
-.animal-card.card-enter { animation: cardEntry 0.55s cubic-bezier(.22,.68,0,1.2) forwards; }
-.animal-card:active { transform: scale(1.08); }
-.animal-card span.name {
-  font-size: clamp(9px, 2.5vw, 12px);
-  font-weight: 700; color: #5a3e80; margin-top: 2px;
-}
-.animal-card.dragging { opacity: 0.4; transform: scale(1.1); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-.animal-card.correct {
-  border-color: #34d399; background: #d1fae5;
-  cursor: default; pointer-events: none;
-  animation: pop 0.35s ease forwards;
-}
-.animal-card.wrong {
-  border-color: #f87171; background: #fee2e2;
-  animation: shake 0.35s ease;
-}
-@keyframes pop {
-  0%{transform:scale(1)} 50%{transform:scale(1.2)} 100%{transform:scale(1); opacity:1;}
-}
-@keyframes shake {
-  0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 60%{transform:translateX(8px)}
-}
-
-/* ── HABITATS ── */
-#habitats-area {
-  display: flex; gap: 10px;
-  justify-content: center; flex-wrap: wrap;
-}
-.habitat-zone {
-  flex: 1; min-width: clamp(90px, 26vw, 145px);
-  max-width: 155px; min-height: 130px;
-  border-radius: 22px;
-  border: 3px dashed #c4b5d8;
-  padding: 8px 5px 8px;
-  display: flex; flex-direction: column;
-  align-items: center;
-  transition: border-color 0.2s, background 0.2s, transform 0.15s;
-}
-.habitat-zone.drag-over {
-  border-color: #34d399; border-style: solid;
-  transform: scale(1.04);
-}
-@keyframes habitatShake {
-  0%,100%{transform:translateX(0) rotate(0deg)}
-  20%{transform:translateX(-5px) rotate(-2deg)}
-  40%{transform:translateX(5px) rotate(2deg)}
-  60%{transform:translateX(-4px) rotate(-1deg)}
-  80%{transform:translateX(4px) rotate(1deg)}
-}
-.habitat-zone.wrong-drop { animation: habitatShake 0.4s ease; }
-
-.habitat-icon { font-size: clamp(26px, 7vw, 36px); margin-bottom: 3px; }
-.habitat-label {
-  font-size: clamp(11px, 2.8vw, 14px);
-  font-weight: 800; margin-bottom: 5px;
-  text-align: center; line-height: 1.2;
-}
-.habitat-animals {
-  display: flex; flex-wrap: wrap;
-  gap: 3px; justify-content: center; min-height: 34px;
-}
-.habitat-animals .animal-card {
-  width: clamp(40px, 12vw, 54px);
-  height: clamp(40px, 12vw, 54px);
-  font-size: clamp(18px, 5.5vw, 26px);
-  border-width: 2px; border-radius: 12px;
-  animation: pop 0.35s ease forwards;
-}
-.habitat-animals .animal-card span.name { font-size: 7px; }
-
-/* Habitat colors */
-.h-selva     { background: #f0fdf4; border-color: #86efac; }
-.h-selva     .habitat-label { color: #166534; }
-.h-oceano    { background: #eff6ff; border-color: #93c5fd; }
-.h-oceano    .habitat-label { color: #1e3a8a; }
-.h-granja    { background: #fff7ed; border-color: #fdba74; }
-.h-granja    .habitat-label { color: #9a3412; }
-.h-desierto  { background: #fefce8; border-color: #fde047; }
-.h-desierto  .habitat-label { color: #713f12; }
-.h-antartica { background: #f0f9ff; border-color: #7dd3fc; }
-.h-antartica .habitat-label { color: #0c4a6e; }
-
-/* ── FUN FACT BUBBLE ── */
-#fact-bubble {
-  position: fixed; bottom: 28px; left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: #1e1b4b; color: white;
-  padding: 12px 22px; border-radius: 24px;
-  font-size: clamp(13px, 3.5vw, 16px); font-weight: 600;
-  max-width: min(90vw, 420px); text-align: center;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
-  opacity: 0; pointer-events: none; z-index: 200;
-  transition: opacity 0.3s, transform 0.3s;
-  line-height: 1.4;
-}
-#fact-bubble.visible {
-  opacity: 1; transform: translateX(-50%) translateY(0);
-}
-
-/* ── FEEDBACK OVERLAY ── */
-#feedback-overlay {
-  position: fixed; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: none; z-index: 100;
-  opacity: 0; transition: opacity 0.2s;
-}
-#feedback-overlay.visible { opacity: 1; }
-#feedback-box {
-  padding: 16px 32px; border-radius: 50px;
-  font-size: clamp(20px, 5.5vw, 28px);
-  font-weight: 800; color: white;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  text-align: center; line-height: 1.3;
-}
-#feedback-box.correct-fb { background: #22c55e; }
-#feedback-box.wrong-fb   { background: #ef4444; }
-
-/* ── STREAK CELEBRATE ── */
-#streak-celebrate {
-  position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
-  color: white; padding: 20px 36px; border-radius: 28px;
-  font-size: clamp(22px, 6vw, 32px); font-weight: 800;
-  text-align: center; z-index: 300;
-  box-shadow: 0 12px 40px rgba(239,68,68,0.4);
-  pointer-events: none;
-  transition: transform 0.35s cubic-bezier(.22,.68,0,1.3), opacity 0.3s;
-  opacity: 0;
-}
-#streak-celebrate.visible {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-}
-
-/* ── LEVEL COMPLETE ── */
-#level-complete {
-  display: none; position: fixed; inset: 0;
-  background: rgba(93,59,140,0.85);
-  align-items: center; justify-content: center;
-  z-index: 400; flex-direction: column;
-}
-#level-complete.visible { display: flex; }
-.level-box {
-  background: white; border-radius: 28px;
-  padding: 32px 28px; text-align: center;
-  max-width: min(90vw, 400px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
-  animation: popIn 0.4s cubic-bezier(.22,.68,0,1.3);
-}
-@keyframes popIn { 0%{transform:scale(0.7);opacity:0} 100%{transform:scale(1);opacity:1} }
-.level-box h3 { font-size: clamp(22px,6vw,30px); font-weight:800; color:#5d3b8c; margin-bottom:8px; }
-.level-box .stars { font-size: clamp(28px,8vw,42px); margin: 8px 0 14px; letter-spacing: 4px; }
-.level-box .score-text { font-size: clamp(14px,3.5vw,18px); color:#7c5c9e; margin-bottom:20px; }
-#next-round-btn {
-  padding: clamp(12px,3.5vw,16px) clamp(28px,7vw,44px);
-  font-size: clamp(16px,4.5vw,20px); font-weight:800;
-  border-radius:50px;
-  background: linear-gradient(135deg, #a78bfa, #34d399);
-  border:none; color:white; cursor:pointer;
-  box-shadow: 0 6px 20px rgba(130,90,200,0.3);
-  transition: transform 0.15s;
-}
-#next-round-btn:hover { transform:scale(1.06); }
-
-/* ── CONFETTI CANVAS ── */
-#confetti-canvas {
-  position: fixed; inset: 0; pointer-events: none;
-  z-index: 350; opacity: 0; transition: opacity 0.3s;
-}
-#confetti-canvas.active { opacity: 1; }
-
-/* ── END SCREEN ── */
-#end-screen {
-  display: none; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 36px 20px; text-align: center;
-  width: 100%; max-width: 560px;
-  background: white; border-radius: 28px;
-  box-shadow: 0 8px 32px rgba(130,90,200,0.15);
-}
-#end-screen .trophy { font-size: clamp(60px, 16vw, 90px); margin-bottom: 10px; }
-#end-screen h2 { font-size: clamp(22px, 6vw, 32px); font-weight:800; color:#5d3b8c; margin-bottom:6px; }
-#end-stars { font-size: clamp(26px,7vw,38px); margin-bottom:10px; letter-spacing:4px; }
-#end-screen .sub { font-size: clamp(14px,3.5vw,18px); color:#7c5c9e; margin-bottom:16px; }
-
-#animals-learned {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  justify-content: center; margin-bottom: 22px;
-  max-width: 420px;
-}
-.learned-chip {
-  background: #f3e8ff; border: 2px solid #d4b8f0;
-  border-radius: 20px; padding: 5px 12px;
-  font-size: clamp(13px,3.5vw,15px); font-weight:700; color:#5d3b8c;
-}
-
-.end-btn-row { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
-
-#play-again-btn, #share-btn {
-  padding: clamp(12px,3.5vw,16px) clamp(24px,6vw,38px);
-  font-size: clamp(15px, 4vw, 19px);
-  font-weight: 800; border-radius: 50px;
-  border: none; cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 6px 20px rgba(130,90,200,0.25);
-}
-#play-again-btn {
-  background: linear-gradient(135deg, #a78bfa, #34d399);
-  color: white;
-}
-#share-btn {
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
-  color: white;
-}
-#play-again-btn:hover, #share-btn:hover { transform: scale(1.06); }
-
-#share-toast {
-  position: fixed; bottom: 24px; left: 50%;
-  transform: translateX(-50%);
-  background: #1e1b4b; color: white;
-  padding: 10px 24px; border-radius: 20px;
-  font-size: 14px; font-weight: 600;
-  opacity: 0; transition: opacity 0.3s; z-index: 500;
-  pointer-events: none;
-}
-#share-toast.visible { opacity: 1; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: #fff8ee; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; }
+  #game { width: 100%; max-width: 600px; padding: 16px; background: #FFF9F0; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  #header { text-align: center; margin-bottom: 12px; }
+  #round-info { font-size: 15px; color: #7c5c3a; font-weight: 500; margin-bottom: 4px; }
+  #instruction { font-size: 19px; font-weight: 700; color: #3a2a10; margin-bottom: 12px; text-align: center; }
+  #animals-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 16px; min-height: 90px; }
+  .animal-card {
+    width: 82px; height: 82px; border-radius: 16px; background: white;
+    border: 2.5px solid #e5c07a; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; cursor: grab; font-size: 36px;
+    user-select: none; transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .animal-card span.name { font-size: 11px; font-weight: 600; color: #5a3e1b; margin-top: 2px; }
+  .animal-card.dragging { opacity: 0.5; transform: scale(1.12); }
+  .animal-card.correct { border-color: #3dba74; background: #eafaf1; cursor: default; }
+  .animal-card.wrong { border-color: #e24b4a; background: #fcebeb; animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  #habitats-area { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .habitat-zone {
+    flex: 1; min-width: 120px; max-width: 180px; min-height: 130px; border-radius: 18px;
+    border: 3px dashed #ccc; padding: 8px 6px 6px; display: flex; flex-direction: column;
+    align-items: center; transition: border-color 0.2s, background 0.2s;
+  }
+  .habitat-zone.drag-over { border-color: #3dba74; background: #eafaf1; }
+  .habitat-icon { font-size: 32px; margin-bottom: 4px; }
+  .habitat-label { font-size: 14px; font-weight: 700; color: #3a2a10; margin-bottom: 6px; }
+  .habitat-animals { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 40px; }
+  .habitat-animals .animal-card { width: 52px; height: 52px; font-size: 24px; border-width: 2px; }
+  .habitat-animals .animal-card span.name { font-size: 9px; }
+  #feedback-banner {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    padding: 12px 28px; border-radius: 40px; font-size: 20px; font-weight: 700;
+    z-index: 999; display: none; white-space: nowrap;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+  }
+  #feedback-banner.show-correct { background: #3dba74; color: white; display: block; }
+  #feedback-banner.show-wrong { background: #e24b4a; color: white; display: block; }
+  #progress-bar { width: 100%; height: 10px; background: #f0dbb0; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg,#f9a825,#3dba74); border-radius: 10px; transition: width 0.4s; }
+  #end-screen { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; text-align: center; }
+  #end-screen .trophy { font-size: 80px; margin-bottom: 12px; }
+  #end-screen h2 { font-size: 30px; font-weight: 700; color: #3a2a10; margin-bottom: 8px; }
+  #end-screen p { font-size: 17px; color: #7c5c3a; margin-bottom: 24px; }
+  #play-again-btn {
+    padding: 16px 40px; font-size: 20px; font-weight: 700; border-radius: 40px;
+    background: #f9a825; border: none; color: white; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(249,168,37,0.4); transition: transform 0.15s;
+  }
+  #play-again-btn:hover { transform: scale(1.06); }
+  .h-selva { background: #edfbe8; border-color: #7ec87e; }
+  .h-oceano { background: #e6f4fb; border-color: #5bb5e8; }
+  .h-desierto { background: #fdf6e3; border-color: #f2c96a; }
+  .h-granja { background: #fff0e8; border-color: #f0a070; }
+  .h-polar { background: #edf4fc; border-color: #a0c4e8; }
 </style>
 </head>
 <body>
 
-<canvas id="confetti-canvas"></canvas>
-
-<div id="top-bar">
-  <div id="lang-toggle">
-    <button id="btn-es" class="active" onclick="setLang('es')">🇪🇸 ES</button>
-    <button id="btn-en" onclick="setLang('en')">🇺🇸 EN</button>
-  </div>
-  <h1 id="main-title">🐾 Animales y Hábitats</h1>
-  <div style="display:flex;align-items:center;gap:6px;">
-    <a id="home-btn" href="index_1.html">🏠 <span class="t" data-es="Inicio" data-en="Home">Inicio</span></a>
-    <div id="streak-display">🔥 0</div>
-  </div>
-</div>
-
-<div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
-<div id="round-info">Ronda 1 de 5</div>
-
-<div id="timer-bar">
-  <span id="timer-label">⏱ Tiempo:</span>
-  <span id="timer-display">0s</span>
-  <button id="timer-toggle">Activar</button>
-</div>
-
 <div id="game">
-  <div id="instruction">¿Dónde vive? ¡Arrástralo a su hogar! 🏡</div>
+  <div id="header">
+    <div id="round-info">Ronda 1 de 5</div>
+    <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+    <div id="instruction">¿Dónde vive este animal? ¡Arrástralo!</div>
+  </div>
   <div id="animals-area"></div>
   <div id="habitats-area"></div>
 </div>
 
 <div id="end-screen">
   <div class="trophy">🏆</div>
-  <h2 id="end-title">¡Lo lograste!</h2>
-  <div id="end-stars">⭐⭐⭐⭐⭐</div>
-  <p class="sub" id="end-sub">¡Completaste las 5 rondas! ¡Eres un campeón! 🌟</p>
-  <div id="animals-learned"></div>
-  <div class="end-btn-row">
-    <button id="play-again-btn">🔄 <span class="t" data-es="¡Jugar de nuevo!" data-en="Play again!">¡Jugar de nuevo!</span></button>
-    <button id="share-btn">📋 <span class="t" data-es="Compartir resultado" data-en="Share result">Compartir resultado</span></button>
-  </div>
+  <h2>¡Felicidades!</h2>
+  <p>¡Completaste todas las rondas!<br>Eres un experto en animales 🌍</p>
+  <button id="play-again-btn">¡Jugar de nuevo!</button>
 </div>
 
-<div id="feedback-overlay">
-  <div id="feedback-box"></div>
-</div>
-
-<div id="level-complete">
-  <div class="level-box">
-    <h3 id="lc-title">¡Ronda completa! 🎉</h3>
-    <div class="stars" id="lc-stars">⭐⭐⭐</div>
-    <p class="score-text" id="lc-score">3 de 3 animales a la primera</p>
-    <button id="next-round-btn">Siguiente ronda ➡️</button>
-  </div>
-</div>
-
-<div id="fact-bubble"></div>
-<div id="streak-celebrate">🔥 ¡Racha de 3! 🔥</div>
-<div id="share-toast">¡Copiado! 📋</div>
+<div id="feedback-banner"></div>
 
 <script>
-/* ═══════════════════════════════════════════
-   DATA
-═══════════════════════════════════════════ */
-const HABITATS = {
-  selva:     { id:'selva',     icon:'🌴', label:{es:'Selva',     en:'Jungle'},      cls:'h-selva'     },
-  oceano:    { id:'oceano',    icon:'🌊', label:{es:'Océano',    en:'Ocean'},       cls:'h-oceano'    },
-  granja:    { id:'granja',    icon:'🌾', label:{es:'Granja',    en:'Farm'},        cls:'h-granja'    },
-  desierto:  { id:'desierto',  icon:'🏜️', label:{es:'Desierto',  en:'Desert'},      cls:'h-desierto'  },
-  antartica: { id:'antartica', icon:'❄️', label:{es:'Antártida', en:'Antarctica'},  cls:'h-antartica' }
-};
-
-const ANIMALS = [
-  { emoji:'🐒', name:{es:'Mono',       en:'Monkey'},    habitat:'selva',
-    fact:{es:'¡Los monos usan su cola para colgarse de ramas! 🌿', en:'Monkeys use their tails to hang from branches! 🌿'} },
-  { emoji:'🦜', name:{es:'Loro',       en:'Parrot'},    habitat:'selva',
-    fact:{es:'Los loros pueden copiar la voz humana 🗣️', en:'Parrots can mimic human voices 🗣️'} },
-  { emoji:'🐯', name:{es:'Tigre',      en:'Tiger'},     habitat:'selva',
-    fact:{es:'El tigre es el felino más grande del mundo 🐾', en:'The tiger is the world\'s largest wild cat 🐾'} },
-  { emoji:'🐬', name:{es:'Delfín',     en:'Dolphin'},   habitat:'oceano',
-    fact:{es:'El delfín respira aire como tú y como yo 🌬️', en:'Dolphins breathe air just like we do 🌬️'} },
-  { emoji:'🐙', name:{es:'Pulpo',      en:'Octopus'},   habitat:'oceano',
-    fact:{es:'El pulpo tiene 3 corazones y sangre azul 💙', en:'Octopuses have 3 hearts and blue blood 💙'} },
-  { emoji:'🦈', name:{es:'Tiburón',    en:'Shark'},     habitat:'oceano',
-    fact:{es:'Los tiburones tienen dientes de repuesto 🦷', en:'Sharks can regrow new teeth their whole life 🦷'} },
-  { emoji:'🐄', name:{es:'Vaca',       en:'Cow'},       habitat:'granja',
-    fact:{es:'¡Una vaca tiene 4 estómagos para digerir! 🍃', en:'A cow has 4 stomachs to digest its food! 🍃'} },
-  { emoji:'🐷', name:{es:'Cerdo',      en:'Pig'},       habitat:'granja',
-    fact:{es:'¡Los cerdos son tan inteligentes como los perros! 🧠', en:'Pigs are as smart as dogs! 🧠'} },
-  { emoji:'🐔', name:{es:'Gallina',    en:'Hen'},       habitat:'granja',
-    fact:{es:'Las gallinas ponen casi un huevo cada día 🥚', en:'Hens lay almost one egg every single day 🥚'} },
-  { emoji:'🐪', name:{es:'Camello',    en:'Camel'},     habitat:'desierto',
-    fact:{es:'El camello guarda energía, no agua, en su joroba 🌵', en:'Camel humps store fat for energy, not water 🌵'} },
-  { emoji:'🦎', name:{es:'Lagarto',    en:'Lizard'},    habitat:'desierto',
-    fact:{es:'Los lagartos se calientan tomando sol ☀️', en:'Lizards warm up by basking in the sun ☀️'} },
-  { emoji:'🦂', name:{es:'Escorpión',  en:'Scorpion'},  habitat:'desierto',
-    fact:{es:'¡El escorpión brilla bajo luz ultravioleta! ✨', en:'Scorpions glow under ultraviolet light! ✨'} },
-  { emoji:'🐧', name:{es:'Pingüino',   en:'Penguin'},   habitat:'antartica',
-    fact:{es:'Los pingüinos no vuelan, ¡pero nadan muy rápido! 🏊', en:'Penguins can\'t fly, but they\'re super fast swimmers! 🏊'} },
-  { emoji:'🦭', name:{es:'Foca',       en:'Seal'},      habitat:'antartica',
-    fact:{es:'Las focas aguantan el aliento ¡hasta 30 minutos! 🌊', en:'Seals can hold their breath for up to 30 minutes! 🌊'} },
-  { emoji:'🐋', name:{es:'Orca',       en:'Orca'},      habitat:'antartica',
-    fact:{es:'La orca es en realidad un delfín gigante 🧠', en:'The orca is actually a giant type of dolphin 🧠'} }
+const ROUNDS = [
+  {
+    habitat: { id: "selva", label: "Selva", icon: "🌴", cls: "h-selva" },
+    animals: [
+      { emoji: "🐒", name: "Mono" },
+      { emoji: "🦜", name: "Loro" },
+      { emoji: "🐆", name: "Jaguar" }
+    ]
+  },
+  {
+    habitat: { id: "oceano", label: "Océano", icon: "🌊", cls: "h-oceano" },
+    animals: [
+      { emoji: "🐬", name: "Delfín" },
+      { emoji: "🦈", name: "Tiburón" },
+      { emoji: "🐙", name: "Pulpo" }
+    ]
+  },
+  {
+    habitat: { id: "desierto", label: "Desierto", icon: "🏜️", cls: "h-desierto" },
+    animals: [
+      { emoji: "🦂", name: "Escorpión" },
+      { emoji: "🐪", name: "Camello" },
+      { emoji: "🦎", name: "Lagarto" }
+    ]
+  },
+  {
+    habitat: { id: "granja", label: "Granja", icon: "🌾", cls: "h-granja" },
+    animals: [
+      { emoji: "🐄", name: "Vaca" },
+      { emoji: "🐷", name: "Cerdo" },
+      { emoji: "🐔", name: "Gallina" }
+    ]
+  },
+  {
+    habitat: { id: "polar", label: "Polo Norte", icon: "❄️", cls: "h-polar" },
+    animals: [
+      { emoji: "🐻‍❄️", name: "Oso polar" },
+      { emoji: "🐧", name: "Pingüino" },
+      { emoji: "🦭", name: "Foca" }
+    ]
+  }
 ];
 
-/* Round config: [habitats count, animals per habitat] */
-const ROUND_CONFIG = [
-  { numH: 2, perH: 2 },
-  { numH: 2, perH: 3 },
-  { numH: 3, perH: 2 },
-  { numH: 3, perH: 3 },
-  { numH: 4, perH: 2 }
-];
-const TOTAL_ROUNDS = ROUND_CONFIG.length;
-
-/* ═══════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════ */
-let lang = 'es';
 let currentRound = 0;
-let roundHabitats = [];   // habitat ids for current round
-let roundAnimals = [];    // animal objects for current round
 let placedCount = 0;
-let wrongThisRound = 0;
-let streak = 0;
-let totalStars = 0;
-let totalAnimalsLearned = [];
-let usedHabitatCombos = new Set();
-
-let timerActive = false;
-let timerSeconds = 0;
-let timerInterval = null;
-
+let totalAnimals = 0;
 let draggingId = null;
-let touchCard = null, touchClone = null;
 
-/* ═══════════════════════════════════════════
-   LANGUAGE
-═══════════════════════════════════════════ */
-function t(es, en) { return lang === 'es' ? es : en; }
-
-function applyLang() {
-  document.getElementById('main-title').textContent = t('🐾 Animales y Hábitats', '🐾 Animals & Habitats');
-  document.getElementById('btn-es').classList.toggle('active', lang === 'es');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-  document.getElementById('instruction').textContent = t('¿Dónde vive? ¡Arrástralo a su hogar! 🏡', 'Where does it live? Drag it home! 🏡');
-  document.getElementById('timer-label').textContent = t('⏱ Tiempo:', '⏱ Time:');
-  document.getElementById('timer-toggle').textContent = timerActive ? t('Pausar','Pause') : t('Activar','Enable');
-  document.querySelectorAll('.t').forEach(el => {
-    el.textContent = lang === 'es' ? el.dataset.es : el.dataset.en;
-  });
-  // Actualizar texto de ronda
-  document.getElementById('round-info').textContent =
-    t(`Ronda ${currentRound + 1} de ${TOTAL_ROUNDS}`, `Round ${currentRound + 1} of ${TOTAL_ROUNDS}`);
-  // Refresh habitat labels if round is built
-  document.querySelectorAll('.habitat-zone').forEach(zone => {
-    const hid = zone.dataset.habitat;
-    const lbl = zone.querySelector('.habitat-label');
-    if (lbl && HABITATS[hid]) {
-      lbl.textContent = HABITATS[hid].icon + ' ' + HABITATS[hid].label[lang];
-    }
-  });
-  // Refresh animal names
-  document.querySelectorAll('.animal-card[data-animal-idx]').forEach(card => {
-    const idx = parseInt(card.dataset.animalIdx);
-    const span = card.querySelector('.name');
-    if (span && ANIMALS[idx]) span.textContent = ANIMALS[idx].name[lang];
-  });
+function shuffle(arr) {
+  return arr.slice().sort(() => Math.random() - 0.5);
 }
 
-function setLang(l) { lang = l; applyLang(); }
+function buildRound(roundIdx) {
+  const round = ROUNDS[roundIdx];
+  placedCount = 0;
+  totalAnimals = round.animals.length;
 
-/* ═══════════════════════════════════════════
-   AUDIO (Web Audio API — no libraries)
-═══════════════════════════════════════════ */
-let audioCtx = null;
-function getCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
+  document.getElementById("round-info").textContent = `Ronda ${roundIdx + 1} de 5`;
+  document.getElementById("progress-fill").style.width = ((roundIdx / 5) * 100) + "%";
 
-function playTone(freq, type, duration, gain, delay = 0) {
-  try {
-    const ctx = getCtx();
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.connect(g); g.connect(ctx.destination);
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-    g.gain.setValueAtTime(gain, ctx.currentTime + delay);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
-    osc.start(ctx.currentTime + delay);
-    osc.stop(ctx.currentTime + delay + duration + 0.05);
-  } catch(e) {}
-}
+  const animalsArea = document.getElementById("animals-area");
+  animalsArea.innerHTML = "";
+  const habitatsArea = document.getElementById("habitats-area");
+  habitatsArea.innerHTML = "";
 
-function soundCorrect() {
-  playTone(523, 'sine', 0.18, 0.35);
-  playTone(659, 'sine', 0.18, 0.3, 0.1);
-}
-function soundWrong() {
-  playTone(220, 'square', 0.25, 0.2);
-}
-function soundStreak() {
-  [523,659,784,1047].forEach((f, i) => playTone(f, 'sine', 0.25, 0.4, i * 0.1));
-}
-function soundLevelComplete() {
-  [523,659,784,880,1047].forEach((f, i) => playTone(f, 'triangle', 0.35, 0.5, i * 0.08));
-}
-function soundFact() {
-  playTone(880, 'sine', 0.12, 0.25);
-  playTone(1047, 'sine', 0.12, 0.2, 0.12);
-}
-
-/* ═══════════════════════════════════════════
-   CONFETTI
-═══════════════════════════════════════════ */
-const confCanvas = document.getElementById('confetti-canvas');
-const confCtx = confCanvas.getContext('2d');
-let confParticles = [];
-let confAnim = null;
-
-function launchConfetti() {
-  confCanvas.width = window.innerWidth;
-  confCanvas.height = window.innerHeight;
-  confParticles = Array.from({length: 90}, () => ({
-    x: Math.random() * confCanvas.width,
-    y: -10 - Math.random() * 60,
-    r: 5 + Math.random() * 6,
-    color: `hsl(${Math.random()*360},85%,60%)`,
-    vx: (Math.random() - 0.5) * 4,
-    vy: 3 + Math.random() * 4,
-    rot: Math.random() * Math.PI * 2,
-    rvel: (Math.random() - 0.5) * 0.2
-  }));
-  confCanvas.classList.add('active');
-  if (confAnim) cancelAnimationFrame(confAnim);
-  animateConfetti(0);
-}
-
-function animateConfetti(frame) {
-  confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
-  confParticles.forEach(p => {
-    p.x += p.vx; p.y += p.vy; p.rot += p.rvel;
-    confCtx.save();
-    confCtx.translate(p.x, p.y);
-    confCtx.rotate(p.rot);
-    confCtx.fillStyle = p.color;
-    confCtx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 0.6);
-    confCtx.restore();
-  });
-  confParticles = confParticles.filter(p => p.y < confCanvas.height + 20);
-  if (confParticles.length > 0 && frame < 180) {
-    confAnim = requestAnimationFrame(() => animateConfetti(frame + 1));
-  } else {
-    confCanvas.classList.remove('active');
-    confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
-  }
-}
-
-/* ═══════════════════════════════════════════
-   TIMER
-═══════════════════════════════════════════ */
-function startTimer() {
-  timerSeconds = 0;
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    timerSeconds++;
-    document.getElementById('timer-display').textContent = timerSeconds + 's';
-  }, 1000);
-}
-function stopTimer() { clearInterval(timerInterval); }
-
-document.getElementById('timer-toggle').addEventListener('click', () => {
-  timerActive = !timerActive;
-  document.getElementById('timer-bar').style.opacity = timerActive ? '1' : '0.4';
-  document.getElementById('timer-toggle').textContent = timerActive ? t('Pausar','Pause') : t('Activar','Enable');
-  if (timerActive) startTimer(); else stopTimer();
-});
-document.getElementById('timer-bar').style.opacity = '0.4';
-
-/* ═══════════════════════════════════════════
-   ROUND GENERATION
-═══════════════════════════════════════════ */
-function shuffle(arr) { return arr.slice().sort(() => Math.random() - 0.5); }
-
-function generateRound(idx) {
-  const cfg = ROUND_CONFIG[idx];
-  const habitatKeys = Object.keys(HABITATS);
-  let chosen;
-
-  // Try up to 8 times to get a fresh habitat combo
-  for (let attempt = 0; attempt < 8; attempt++) {
-    chosen = shuffle(habitatKeys).slice(0, cfg.numH);
-    const key = chosen.slice().sort().join(',');
-    if (!usedHabitatCombos.has(key)) {
-      usedHabitatCombos.add(key);
-      break;
-    }
-  }
-
-  const animals = [];
-  chosen.forEach(hid => {
-    const pool = ANIMALS.filter(a => a.habitat === hid);
-    shuffle(pool).slice(0, cfg.perH).forEach(a => animals.push(a));
-  });
-
-  return { habitats: chosen, animals: shuffle(animals) };
-}
-
-/* ═══════════════════════════════════════════
-   BUILD ROUND
-═══════════════════════════════════════════ */
-function buildRound(idx) {
-  const round = generateRound(idx);
-  roundHabitats = round.habitats;
-  roundAnimals  = round.animals;
-  placedCount   = 0;
-  wrongThisRound = 0;
-
-  document.getElementById('round-info').textContent =
-    t(`Ronda ${idx+1} de ${TOTAL_ROUNDS}`, `Round ${idx+1} of ${TOTAL_ROUNDS}`);
-  document.getElementById('progress-fill').style.width = ((idx / TOTAL_ROUNDS) * 100) + '%';
-
-  const aa = document.getElementById('animals-area');
-  const ha = document.getElementById('habitats-area');
-  aa.innerHTML = ''; ha.innerHTML = '';
-
-  // Animal cards with staggered entry animation
-  roundAnimals.forEach((a, i) => {
-    const animalIdx = ANIMALS.indexOf(a);
-    const card = document.createElement('div');
-    card.className = 'animal-card';
+  shuffle(round.animals).forEach((a, i) => {
+    const card = document.createElement("div");
+    card.className = "animal-card";
     card.draggable = true;
-    card.dataset.habitat = a.habitat;
-    card.dataset.animalIdx = animalIdx;
-    card.id = 'ac-' + i;
-    card.innerHTML = `${a.emoji}<span class="name">${a.name[lang]}</span>`;
-    card.addEventListener('dragstart', onDragStart);
-    card.addEventListener('dragend',   onDragEnd);
-    card.addEventListener('touchstart', onTouchStart, { passive: false });
-    card.addEventListener('touchmove',  onTouchMove,  { passive: false });
-    card.addEventListener('touchend',   onTouchEnd,   { passive: false });
-    aa.appendChild(card);
-    // Staggered bounce entry
-    setTimeout(() => card.classList.add('card-enter'), i * 80);
+    card.dataset.animal = a.name;
+    card.dataset.habitat = round.habitat.id;
+    card.id = "animal-" + i;
+    card.innerHTML = `${a.emoji}<span class="name">${a.name}</span>`;
+    card.addEventListener("dragstart", onDragStart);
+    card.addEventListener("dragend", onDragEnd);
+    card.addEventListener("touchstart", onTouchStart, { passive: true });
+    card.addEventListener("touchmove", onTouchMove, { passive: false });
+    card.addEventListener("touchend", onTouchEnd);
+    animalsArea.appendChild(card);
   });
 
-  // Habitat zones
-  roundHabitats.forEach(hid => {
-    const h = HABITATS[hid];
-    const zone = document.createElement('div');
-    zone.className = `habitat-zone ${h.cls}`;
-    zone.dataset.habitat = hid;
-    zone.innerHTML = `<div class="habitat-icon">${h.icon}</div>
-      <div class="habitat-label">${h.icon} ${h.label[lang]}</div>
-      <div class="habitat-animals"></div>`;
-    zone.addEventListener('dragover',  onDragOver);
-    zone.addEventListener('dragleave', onDragLeave);
-    zone.addEventListener('drop',      onDrop);
-    ha.appendChild(zone);
-  });
-
-  if (timerActive) startTimer();
+  const zone = document.createElement("div");
+  zone.className = `habitat-zone ${round.habitat.cls}`;
+  zone.dataset.habitat = round.habitat.id;
+  zone.innerHTML = `<div class="habitat-icon">${round.habitat.icon}</div><div class="habitat-label">${round.habitat.label}</div><div class="habitat-animals"></div>`;
+  zone.addEventListener("dragover", onDragOver);
+  zone.addEventListener("dragleave", onDragLeave);
+  zone.addEventListener("drop", onDrop);
+  habitatsArea.appendChild(zone);
 }
 
-/* ═══════════════════════════════════════════
-   DRAG — desktop
-═══════════════════════════════════════════ */
-function onDragStart(e) { draggingId = this.id; setTimeout(() => this.classList.add('dragging'), 0); }
-function onDragEnd()    { this.classList.remove('dragging'); }
-function onDragOver(e)  { e.preventDefault(); this.classList.add('drag-over'); }
-function onDragLeave()  { this.classList.remove('drag-over'); }
+function onDragStart(e) {
+  draggingId = this.id;
+  setTimeout(() => this.classList.add("dragging"), 0);
+}
+function onDragEnd() { this.classList.remove("dragging"); }
+function onDragOver(e) { e.preventDefault(); this.classList.add("drag-over"); }
+function onDragLeave() { this.classList.remove("drag-over"); }
 function onDrop(e) {
-  e.preventDefault(); this.classList.remove('drag-over');
+  e.preventDefault();
+  this.classList.remove("drag-over");
   const card = document.getElementById(draggingId);
   if (card) handleDrop(card, this);
 }
 
-/* ═══════════════════════════════════════════
-   TOUCH — mobile
-═══════════════════════════════════════════ */
+let touchCard = null, touchClone = null;
 function onTouchStart(e) {
-  e.preventDefault();
   touchCard = this;
-  const r = this.getBoundingClientRect();
+  const rect = this.getBoundingClientRect();
   touchClone = this.cloneNode(true);
-  touchClone.style.cssText = `position:fixed;top:${r.top}px;left:${r.left}px;width:${r.width}px;height:${r.height}px;opacity:0.85;pointer-events:none;z-index:9999;transition:none;border-radius:20px;`;
+  touchClone.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;opacity:0.8;pointer-events:none;z-index:9999;transition:none;`;
   document.body.appendChild(touchClone);
 }
 function onTouchMove(e) {
   e.preventDefault();
   if (!touchClone) return;
-  const touch = e.touches[0];
-  const w = touchClone.offsetWidth, h = touchClone.offsetHeight;
-  touchClone.style.left = (touch.clientX - w / 2) + 'px';
-  touchClone.style.top  = (touch.clientY - h / 2) + 'px';
+  const t = e.touches[0];
+  touchClone.style.left = (t.clientX - 41) + "px";
+  touchClone.style.top = (t.clientY - 41) + "px";
 }
 function onTouchEnd(e) {
-  e.preventDefault();
   if (touchClone) { document.body.removeChild(touchClone); touchClone = null; }
   if (!touchCard) return;
-  const touch = e.changedTouches[0];
-  const el   = document.elementFromPoint(touch.clientX, touch.clientY);
-  const zone = el ? el.closest('.habitat-zone') : null;
+  const t = e.changedTouches[0];
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  const zone = el ? el.closest(".habitat-zone") : null;
   if (zone) handleDrop(touchCard, zone);
   touchCard = null;
 }
 
-/* ═══════════════════════════════════════════
-   CORE DROP LOGIC
-═══════════════════════════════════════════ */
 function handleDrop(card, zone) {
-  if (card.classList.contains('correct')) return;
-
   if (card.dataset.habitat === zone.dataset.habitat) {
-    // ✅ CORRECT
-    card.classList.add('correct');
+    card.classList.add("correct");
     card.draggable = false;
-    zone.querySelector('.habitat-animals').appendChild(card);
-    soundCorrect();
-
-    // Streak
-    streak++;
-    updateStreakDisplay();
-
-    if (streak >= 3 && streak % 3 === 0) {
-      triggerStreakCelebration();
-    }
-
-    // Fun fact
-    const animalIdx = parseInt(card.dataset.animalIdx);
-    if (!isNaN(animalIdx) && ANIMALS[animalIdx]) {
-      showFact(ANIMALS[animalIdx].fact[lang]);
-    }
-
-    showFeedback(t('¡Muy bien! 🌟', 'Great job! 🌟'), true);
+    card.style.cursor = "default";
+    zone.querySelector(".habitat-animals").appendChild(card);
+    showFeedback("¡Muy bien! ✓", true);
     placedCount++;
-
-    if (placedCount === roundAnimals.length) {
-      stopTimer();
-      setTimeout(showLevelComplete, 900);
-    }
+    if (placedCount === totalAnimals) setTimeout(() => nextRound(), 900);
   } else {
-    // ❌ WRONG
-    streak = 0;
-    wrongThisRound++;
-    updateStreakDisplay();
-    soundWrong();
-    card.classList.add('wrong');
-    zone.classList.add('wrong-drop');
-    showFeedback(t('¡Sigue intentando! 💪', 'Keep trying! 💪'), false);
-    setTimeout(() => {
-      card.classList.remove('wrong');
-      zone.classList.remove('wrong-drop');
-    }, 420);
+    card.classList.add("wrong");
+    showFeedback("¡Inténtalo de nuevo! 🔄", false);
+    setTimeout(() => card.classList.remove("wrong"), 600);
   }
 }
 
-function updateStreakDisplay() {
-  const el = document.getElementById('streak-display');
-  el.textContent = `🔥 ${streak}`;
-  el.classList.remove('bump');
-  void el.offsetWidth;
-  el.classList.add('bump');
+let feedbackTimer = null;
+function showFeedback(msg, correct) {
+  const el = document.getElementById("feedback-banner");
+  el.textContent = msg;
+  el.className = correct ? "show-correct" : "show-wrong";
+  if (feedbackTimer) clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => { el.className = ""; el.style.display = "none"; }, 1200);
 }
 
-/* ═══════════════════════════════════════════
-   FEEDBACK OVERLAY
-═══════════════════════════════════════════ */
-let fbTimer = null;
-function showFeedback(msg, ok) {
-  const overlay = document.getElementById('feedback-overlay');
-  const box     = document.getElementById('feedback-box');
-  box.textContent = msg;
-  box.className = ok ? 'correct-fb' : 'wrong-fb';
-  overlay.classList.add('visible');
-  if (fbTimer) clearTimeout(fbTimer);
-  fbTimer = setTimeout(() => overlay.classList.remove('visible'), 900);
-}
-
-/* ═══════════════════════════════════════════
-   FUN FACT
-═══════════════════════════════════════════ */
-let factTimer = null;
-function showFact(text) {
-  soundFact();
-  const bubble = document.getElementById('fact-bubble');
-  bubble.textContent = '💡 ' + text;
-  bubble.classList.add('visible');
-  if (factTimer) clearTimeout(factTimer);
-  factTimer = setTimeout(() => bubble.classList.remove('visible'), 2200);
-}
-
-/* ═══════════════════════════════════════════
-   STREAK CELEBRATION
-═══════════════════════════════════════════ */
-function triggerStreakCelebration() {
-  soundStreak();
-  launchConfetti();
-  const el = document.getElementById('streak-celebrate');
-  el.innerHTML = t(`🔥 ¡Racha de ${streak}! 🔥`, `🔥 ${streak} in a row! 🔥`);
-  el.classList.add('visible');
-  setTimeout(() => el.classList.remove('visible'), 1600);
-}
-
-/* ═══════════════════════════════════════════
-   LEVEL COMPLETE
-═══════════════════════════════════════════ */
-function calcStars(wrong, total) {
-  if (wrong === 0) return 3;
-  if (wrong <= Math.ceil(total * 0.3)) return 2;
-  return 1;
-}
-
-function showLevelComplete() {
-  soundLevelComplete();
-  const stars = calcStars(wrongThisRound, roundAnimals.length);
-  totalStars += stars;
-
-  // Track learned animals
-  roundAnimals.forEach(a => {
-    if (!totalAnimalsLearned.find(x => x.emoji === a.emoji)) {
-      totalAnimalsLearned.push(a);
-    }
-  });
-
-  const starsStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
-  document.getElementById('lc-stars').textContent = starsStr;
-  document.getElementById('lc-title').textContent =
-    t('¡Ronda completa! 🎉', 'Round complete! 🎉');
-  document.getElementById('lc-score').textContent =
-    t(`${roundAnimals.length - wrongThisRound} de ${roundAnimals.length} a la primera ✅`,
-      `${roundAnimals.length - wrongThisRound} of ${roundAnimals.length} on the first try ✅`);
-
-  const isLast = currentRound + 1 >= TOTAL_ROUNDS;
-  document.getElementById('next-round-btn').textContent = isLast
-    ? t('Ver resultado final 🏆', 'See final result 🏆')
-    : t('Siguiente ronda ➡️', 'Next round ➡️');
-
-  document.getElementById('level-complete').classList.add('visible');
-}
-
-document.getElementById('next-round-btn').addEventListener('click', () => {
-  document.getElementById('level-complete').classList.remove('visible');
-  nextRound();
-});
-
-/* ═══════════════════════════════════════════
-   NEXT ROUND / END
-═══════════════════════════════════════════ */
 function nextRound() {
   currentRound++;
-  if (currentRound >= TOTAL_ROUNDS) {
-    showEndScreen();
+  if (currentRound >= ROUNDS.length) {
+    document.getElementById("game").style.display = "none";
+    document.getElementById("end-screen").style.display = "flex";
+    document.getElementById("progress-fill").style.width = "100%";
   } else {
     buildRound(currentRound);
   }
 }
 
-function showEndScreen() {
-  document.getElementById('game').style.display = 'none';
-  const es = document.getElementById('end-screen');
-  es.style.display = 'flex';
-  document.getElementById('progress-fill').style.width = '100%';
-  document.getElementById('round-info').textContent = t('¡Completado! 🎉', 'Completed! 🎉');
-
-  const maxStars = TOTAL_ROUNDS * 3;
-  const starsFull = Math.round((totalStars / maxStars) * 5);
-  document.getElementById('end-stars').textContent = '⭐'.repeat(starsFull) + '☆'.repeat(5 - starsFull);
-
-  document.getElementById('end-title').textContent = t('¡Lo lograste!', 'You did it!');
-  document.getElementById('end-sub').textContent =
-    t(`¡${totalStars} estrellas de ${maxStars} posibles! ¡Eres un campeón de los animales! 🌟`,
-      `${totalStars} stars out of ${maxStars}! You're an animal champion! 🌟`);
-
-  const learnedDiv = document.getElementById('animals-learned');
-  learnedDiv.innerHTML = '';
-  totalAnimalsLearned.forEach(a => {
-    const chip = document.createElement('div');
-    chip.className = 'learned-chip';
-    chip.textContent = `${a.emoji} ${a.name[lang]}`;
-    learnedDiv.appendChild(chip);
-  });
-
-  launchConfetti();
-  soundLevelComplete();
-}
-
-/* ═══════════════════════════════════════════
-   SHARE
-═══════════════════════════════════════════ */
-document.getElementById('share-btn').addEventListener('click', () => {
-  const maxStars = TOTAL_ROUNDS * 3;
-  const starsLine = '⭐'.repeat(totalStars) + ' (' + totalStars + '/' + maxStars + ')';
-  const animalLine = totalAnimalsLearned.map(a => a.emoji + ' ' + a.name[lang]).join(', ');
-  const text = lang === 'es'
-    ? `🐾 ¡Completé Animales y Hábitats en MiniMundo!\n${starsLine}\nAprendí sobre: ${animalLine}\n¡Juega tú también! 🌍`
-    : `🐾 I completed Animals & Habitats on MiniMundo!\n${starsLine}\nI learned about: ${animalLine}\nPlay too! 🌍`;
-
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => flashToast());
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    flashToast();
-  }
-});
-
-function flashToast() {
-  const toast = document.getElementById('share-toast');
-  toast.textContent = t('¡Copiado al portapapeles! 📋', 'Copied to clipboard! 📋');
-  toast.classList.add('visible');
-  setTimeout(() => toast.classList.remove('visible'), 2000);
-}
-
-/* ═══════════════════════════════════════════
-   PLAY AGAIN
-═══════════════════════════════════════════ */
-document.getElementById('play-again-btn').addEventListener('click', () => {
+document.getElementById("play-again-btn").addEventListener("click", () => {
   currentRound = 0;
-  streak = 0;
-  totalStars = 0;
-  totalAnimalsLearned = [];
-  usedHabitatCombos = new Set();
-  updateStreakDisplay();
-  document.getElementById('end-screen').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
+  document.getElementById("end-screen").style.display = "none";
+  document.getElementById("game").style.display = "block";
   buildRound(0);
 });
 
-/* ═══════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════ */
 buildRound(0);
 </script>
 </body>
