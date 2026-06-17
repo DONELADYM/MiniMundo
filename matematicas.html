@@ -23,32 +23,13 @@ body {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 8px;
 }
-#lang-toggle {
-  display: flex; border-radius: 20px; overflow: hidden;
-  border: 2px solid #f9a8d4; background: white;
+#lang-btn {
+  padding: 5px 14px; font-size: 13px; font-weight: 800;
+  border-radius: 20px; border: 2px solid #f9a8d4;
+  background: white; color: #db2777; cursor: pointer;
+  transition: background .15s, color .15s;
 }
-#lang-toggle button {
-  padding: 5px 12px; font-size: 13px; font-weight: 800;
-  border: none; background: transparent; color: #e879a0;
-  cursor: pointer; transition: background .15s, color .15s;
-}
-#lang-toggle button.active {
-  background: #f9a8d4; color: white;
-}
-
-#home-btn {
-  padding: 8px 18px;
-  font-size: 15px; font-weight: 800;
-  border-radius: 24px;
-  border: 2.5px solid #f9a8d4;
-  background: white; color: #db2777;
-  cursor: pointer; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 5px;
-  box-shadow: 0 3px 10px rgba(219,39,119,0.15);
-  transition: background .15s, color .15s, transform .15s;
-  white-space: nowrap;
-}
-#home-btn:hover { background: #f9a8d4; color: white; transform: scale(1.05); }
+#lang-btn:hover { background: #f9a8d4; color: white; }
 
 #main-title {
   font-size: clamp(18px, 4.5vw, 26px);
@@ -360,15 +341,9 @@ body {
 
 <!-- TOP BAR -->
 <div id="top-bar">
-  <div id="lang-toggle">
-    <button id="btn-es" class="active" onclick="setLang('es')">🇪🇸 ES</button>
-    <button id="btn-en" onclick="setLang('en')">🇺🇸 EN</button>
-  </div>
+  <button id="lang-btn">🌐 EN</button>
   <h1 id="main-title">🔢 MiniMundo Mate</h1>
-  <div style="display:flex;align-items:center;gap:6px;">
-    <a id="home-btn" href="index_1.html">🏠 <span class="t" data-es="Inicio" data-en="Home">Inicio</span></a>
-    <div id="streak-box">🔥 0</div>
-  </div>
+  <div id="streak-box">🔥 0</div>
 </div>
 
 <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
@@ -570,22 +545,19 @@ let touchClone = null;
 ═══════════════════════════════════════ */
 function t(es, en) { return lang === 'es' ? es : en; }
 
-function setLang(l) { lang = l; applyLang(); }
-
 function applyLang() {
   document.getElementById('main-title').textContent = t('🔢 MiniMundo Mate', '🔢 MiniMundo Math');
-  document.getElementById('btn-es').classList.toggle('active', lang === 'es');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-btn').textContent = lang === 'es' ? '🌐 EN' : '🌐 ES';
   document.querySelectorAll('.t').forEach(el =>
     el.textContent = lang === 'es' ? el.dataset.es : el.dataset.en
   );
-  // Actualizar texto de ronda
-  document.getElementById('round-info').textContent =
-    t(`Ronda ${currentRound + 1} de ${TOTAL_ROUNDS}`, `Round ${currentRound + 1} of ${TOTAL_ROUNDS}`);
   buildRound(currentRound); // rebuild with new language
 }
 
-// lang switching handled by setLang() called from buttons
+document.getElementById('lang-btn').addEventListener('click', () => {
+  lang = lang === 'es' ? 'en' : 'es';
+  applyLang();
+});
 
 /* ═══════════════════════════════════════
    AUDIO
